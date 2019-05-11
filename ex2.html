@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="utf-8">
+        <title>Vue</title>
+    </head>
+    <body>
+        <div id="app">
+            <input type="checkbox" v-model="checked" value="html" id="html">
+            <label for="html">html</label>
+            <br>
+            <input type="checkbox" v-model="checked" value="js" id="js">
+            <label for="js">js</label>
+            <br>
+            <input type="checkbox" v-model="checked" value="css" id="css">
+            <label for="css">css</label>
+            <p>{{ checked }}</p>
+
+            <select name="" id="" v-model="selected" multiple>
+                <option v-for="option in options" :value="option.value">{{option.text}}</option>
+            </select>
+            <p>What your choices is {{ selected }}</p>
+
+            <input type="text" v-model.lazy="content">
+            <p>what you input is {{content}}</p>
+
+            <input type="number" v-model.number.lazy="numberModel">
+            <p>what you input is {{numberModel}}</p>
+
+            <my-component></my-component>
+            <component-1></component-1>
+            <ul>
+                <component-1></component-1>
+            </ul>
+
+            <!-- 多个共享数据 -->
+
+        </div>
+        <div id="test">
+            <my-component></my-component>
+            
+            <!-- 多个共享数据,data写在component中就不会共享了 -->
+            <component-1></component-1>
+            <component-1></component-1>
+            <component-1></component-1>
+
+            <component-2 message="props 来自父元素的数据" message2="正向传递"></component-2>
+
+            <!-- 动态修改数据 -->
+            <input type="text" v-model="parentMessage">
+            <component-2 :message="parentMessage"></component-2>
+        </div>
+        <script src="http://unpkg.com/vue/dist/vue.min.js"></script>
+        <script>
+            Vue.component('my-component', {
+                template: '<div><ul key="book1"><li v-for="(book, index) in sortBooks">{{index+1}}. 书名：{{ book.name }}  价格：{{ book.price }}</li></ul><ul key="book2"><li v-for="(book, index) in filterBooks">{{index+1}}. 书名：{{ book.name }}  价格：{{ book.price }}</li></ul></div>',
+                data: function(){
+                    return {
+                        message: '这是组件的内容',
+                        books: [
+                            {
+                                name: 'Django 2.0开发实践',
+                                price: 37.8
+                            },
+                            {
+                                name: 'Vue.js 实践',
+                                price: 57.3
+                            },
+                            {
+                                name: 'Python3 网络爬虫开发实践',
+                                price: 45.9
+                            }
+                        ],
+                    }
+                },
+                computed: {
+                    filterBooks: function(){
+                        return this.books.filter(function(item){return item.name.match('Vue')})
+                    },
+                    sortBooks: function(){
+                        return this.books.sort(function(a,b){
+                            console.log(a.name.length<b.name.length)
+                            return a.name.length<b.name.length;
+                        })
+                    },
+                }
+            })
+
+            //共享数据测试，写在component中注册就不会共享了
+            Vue.component('component-1',{
+                template: '<button @click="count++">{{count}}</button>',
+                data: function(){
+                    return {
+                        count: 1
+                    }
+                }
+            })
+
+            
+            // props 父组件向子组件传输数据，正向传递
+            Vue.component('component-2',{
+                props: ['message', 'message2'],
+                template: "<div>{{message}} {{message2}}</div>"
+            })
+
+
+            var child = {
+                template: '<div>这是局部注册组件的内容</div>'
+            }
+
+            var test = new Vue({
+                el: '#test',
+                data: {
+                    parentMessage: ''
+                }
+            })
+
+            var app = new Vue({
+                el: '#app',
+                data:{
+                    checked: ['html', 'css'],
+                    selected: ['javascript'],
+                    options: [
+                        {
+                            text: 'HTML',
+                            value: 'html'
+                        },
+                        {
+                            text: 'JavaScript',
+                            value: 'javascript'
+                        },
+                        {
+                            text: 'CSS',
+                            value: 'css'
+                        }
+                    ],
+                    content: '',
+                    numberModel:''
+                },
+                methods: {
+
+                },
+                computed: {
+
+                },
+                components: {
+                    'component-1': child
+                }
+            })
+        </script>
+    </body>
+</html>

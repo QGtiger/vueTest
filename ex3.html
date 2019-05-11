@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8">
+    <title>Vue</title>
+</head>
+
+<body>
+    <div id="app">
+        <input type="number" v-model.lazy="width">
+        <component-validator :width="width"></component-validator>
+
+        <div>总数: {{ total }}</div>
+        <component-emit @increase="handleGetTotal" @reduce="handleGetTotal"></component-emit>
+
+        <component-4 v-model="inputValue"></component-4>
+
+        <!-- 动态组件 component 和 :is -->
+        <component :is="currentView"></component>
+        <button @click="handleChangeView('A')">Change to A</button>
+        <button @click="handleChangeView('B')">Change to B</button>
+        <button @click="handleChangeView('C')">Change to C</button>
+    </div>
+    
+    <!-- bus 中央事件总线 -->
+    <div id="bus">
+        {{message}}
+        <component-test-bus></component-test-bus>
+        <component-test-bus></component-test-bus>
+
+        <!-- 具名slot和单个slot，scope 作用域插槽 -->
+        <component-test-slot>
+            <template scope="props">
+                <h2 slot="header">header 头部内容{{test}}</h2>
+                <p>正文内容1</p>
+                <p>{{ props.msg }}</p>
+                <div slot="footer">footer 尾部内容</div>
+            </template>
+        </component-test-slot>
+
+        <!-- 列表组件 -->
+        <my-list :books="books">
+            <template slot="book" scope="props">
+                <li>{{props.bookName}}</li>
+            </template>
+        </my-list>
+    </div>
+    <script src="https://unpkg.com/vue/dist/vue.min.js"></script>
+    <script type="text/x-template" id="component-test-slot">
+        <div class="container">
+            <div class="header">
+                <slot name="header"></slot>
+            </div>
+            <div class="main">
+                <slot :msg="msg"></slot>
+            </div>
+            <div class="footer" :class="msg">
+                <slot name="footer"></slot>
+            </div>
+        </div>
+    </script>
+    <script>
+        Vue.component('component-validator', {
+            props: ['width'],
+            template: '<div :style="style">{{style}}</div>',
+            computed: {
+                style: function () {
+                    return {
+                        width: this.width + 'px'
+                    }
+                }
+            }
+        })
+
+        Vue.component('component-emit', {
+            template: '<div>\
+                    <div>总数: {{count}}</div>\
+                    <button @click="handleIncrease">+1</button>\
+                    <button @click="handleReduce" :disabled="count === 0">-1</button>\
+                    </div>\
+                ',
+            data: function () {
+                return {
+                    count: 0
+                }
+            },
+            methods: {
+                handleIncrease: function () {
+                    this.count++;
+                    this.$emit('increase', this.count);
+                },
+                handleReduce: function () {
+                    if (this.count === 0) return;
+                    this.count--;
+                    this.$emit('reduce', this.count);
+                }
+            }
+        })
+
+        Vue.component('component-4', {
+            props: ['value'],
+            template: '<input :value="value" @input="updateValue">',
+            methods: {
+                updateValue: function (event) {
+                    this.$emit('input', event.target.value);
+                }
+            }
+        })
+
+        var bus = new Vue()
+
+        Vue.component('component-test-bus', {
+            template: '<button @click="handleEvent">传递事件，bus中央事件总线</button>',
+            methods: {
+                handleEvent: function () {
+                    bus.$emit('on-message', '来着组件component-test-bus的内容');
+                }
+            }
+        })
+
+        Vue.component('component-test-slot', {
+            template: '#component-test-slot',
+            data: function(){
+                return {
+                    msg: "content form 子组件"
+                }
+            },
+            mounted: function(){
+                var header = this.$slots.header;
+                console.log(header)
+            }
+        })
+
+        //列表组件
+        Vue.component('my-list', {
+            props: ['books'],
+            template: '<ul>\
+                <slot name="book" v-for="book in books" :book-name="book.name">\
+                </slot>\
+                </ul>\
+            ',
+            mounted: function(){
+                var header = this.$slots.book;
+                console.log(header)
+            }
+        })
+
+        var busControl = new Vue({
+            el: '#bus',
+            data: {
+                message: '',
+                test: 'Test',
+                books: [
+                    {
+                        name: 'Vue 实践',
+                        price: 23.4
+                    },
+                    {
+                        name: 'Django',
+                        price: 24.1
+                    }
+                ]
+            },
+            mounted: function () {
+                var _this = this;
+                bus.$on('on-message', function (msg) {
+                    _this.message = msg;
+                })
+            }
+        })
+        var app = new Vue({
+            el: '#app',
+            data: {
+                width: '',
+                total: 0,
+                inputValue: 233,
+                currentView: 'comA'
+            },
+            computed: {
+
+            },
+            methods: {
+                handleGetTotal: function (total) {
+                    this.total = total;
+                },
+                handleChangeView: function(component){
+                    this.currentView = 'com'+component;
+                }
+            },
+            filters: {
+
+            },
+            components: {
+                comA: {
+                    template: '<div>This is componentA</div>'
+                },
+                comB: {
+                    template: '<div>This is componentB</div>'
+                },
+                comC: {
+                    template: '<div>This is componentC</div>'
+                }
+            }
+        })
+    </script>
+</body>
+
+</html>

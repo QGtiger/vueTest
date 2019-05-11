@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="utf=8">
+        <title>Vue</title>
+        <style>
+            [v-cloak] {
+                display: none
+            }
+        </style>
+    </head>
+    <body>
+        <div id="app">
+            <input type="text" v-model="name" placeholder="请输入你的名字">
+            <h1 v-cloak>hello, {{name | formatDate}}</h1>
+            <span v-html="link"></span>
+            <span v-pre>{{ 这里的内容会不会进行编译 }}</span>
+            <p>{{ num/10 }}</p>
+            <p>{{ isOk ? '确定':'取消' }}</p>
+            <p>{{ text.split(',').reverse().join(',') }}</p>
+            <p v-if="show">v-show Test</p>
+
+
+            <!-- 语法糖 v-bind可以写成 :  v-on 写成 @ -->
+            <!--v-bind 指令 动态更新数据-->
+            <a target="_blank" v-bind:href="url">{{github}}</a>
+            <a target="_blank" :href="url">{{github}}</a>
+            <img width="100px" v-bind:src="Yoona" alt="">
+
+            <!-- v-on 绑定事件click,dblclick,keyup,mousemove -->
+            <button v-on:click="handleClose">methods-1</button>
+            <!-- 也可以像下面这样 -->
+            <button @click="show = show?false:true">methods-2</button>
+
+            
+            <!-- 计算属性 -->
+            <p>{{ text.split(',').reverse().join(',') }}</p>
+            <p>{{ reverseText }}</p>
+
+            <p>总价: {{ prices }}</p>
+
+            <!-- template vue.js 内置元素 -->
+
+            <template v-if="status===1">
+                <p>template vue.js 内置元素</p>
+                <p>最终渲染并没有该元素</p>
+            </template>
+        </div>
+
+        <!-- key 避免复用 -->
+        <div id="key">
+            <template v-if="key === 'key'">
+                <label for="name">用户名: </label>
+                <input type="text" id="name" placeholder="请输入用户名" key="name-input">
+            </template>
+            <template v-else>
+                <label for="email">邮箱: </label>
+                <input type="text" id="email" placeholder="请输入邮箱" key="email-input">
+            </template>
+            <button @click="handleForKey">handleForKey</button>
+
+            <ul>
+                <li v-for="(book, index) in filterBooks">{{index+1}}. 书名：{{ book.name }}  价格：{{ book.price }}</li>
+            </ul>
+
+            <ul>
+                    <li v-for="(book, index) in sortBooks">{{index+1}}. 书名：{{ book.name }}  价格：{{ book.price }}</li>
+            </ul>
+
+            <p>value key index</p>
+            <span v-for="(value,key,index) in user">{{index}}-{{key}}:{{ value }} <br> </span>
+
+            <div>
+                <p>点击次数： {{count}}</p>
+                <button @click="handleAddCount()">+1</button>
+                <button @click.once="handleAddCount(10)">+10</button>
+            </div>
+
+            <input type="text" placeholder="key.enter for enter" @keyup.enter="submit">
+        </div>
+
+        <script src="https://unpkg.com/vue/dist/vue.min.js"></script>
+        <script>
+            var padDate = function(value){
+                return value < 10 ? '0'+value:value;
+            }
+
+            key = new Vue({
+                el: '#key',
+                data: {
+                    key: 'key',
+                    books: [
+                        {
+                            name: 'Django 2.0开发实践',
+                            price: 37.8
+                        },
+                        {
+                            name: 'Vue.js 实践',
+                            price: 57.3
+                        },
+                        {
+                            name: 'Python3 网络爬虫开发实践',
+                            price: 45.9
+                        }
+                    ],
+                    user: {
+                        name: 'lightfish',
+                        gender: 'sex',
+                        age: '23'
+                    },
+                    count: 0,
+                },
+                created: function(){
+                    console.log("key is created..");
+                },
+                methods: {
+                    handleForKey: function(){
+                        this.key = this.key === 'key'?'no-key':'key';
+                    },
+                    handleAddCount: function(value){
+                        count = value || 1;
+                        this.count += count;
+                    },
+                    submit: function(){
+                        console.log('信息发送了...')
+                    }
+                },
+                computed: {
+                    filterBooks: function(){
+                        return this.books.filter(function(item){return item.name.match('Vue')})
+                    },
+                    sortBooks: function(){
+                        return this.books.sort(function(a,b){
+                            console.log(a.name.length<b.name.length)
+                            return a.name.length<b.name.length;
+                        })
+                    }
+                }
+            })
+
+            app = new Vue({
+                el: '#app',
+                data: {
+                    name: '',
+                    link: '<a href="https://qgtiger.github.io">LightBlog</a>',
+                    num: 100,
+                    isOk: false,
+                    text: 'hello, Vue',
+                    show: true,
+                    github: "Qgtiger",
+                    url: 'https://github.com/QGtiger',
+                    Yoona: 'http://qnpic.top/yoona2.jpg',
+                    //计算属性复杂运算
+                    package1: [
+                        {
+                            name: 'iPhone7',
+                            price: 7199,
+                            count: 2
+                        },
+                        {
+                            name: 'iPhoneXR',
+                            price: 6555,
+                            count: 3
+                        }
+                    ],
+                    package2: [
+                        {
+                            name: 'apple',
+                            price: 5,
+                            count: 6
+                        },
+                        {
+                            name: 'banana',
+                            price: 3,
+                            count: 2
+                        }
+                    ],
+                    status: 1,
+                },
+                computed: {
+                    reverseText: function(){
+                        return this.text.split(',').reverse().join(',');
+                    },
+                    prices: function(){
+                        var price = 0;
+                        for(var i = 0; i < this.package1.length; i++){
+                            price += this.package1[i].price*this.package2[i].count
+                        }
+                        for(var i = 0; i < this.package2.length; i++){
+                            price += this.package2[i].price*this.package2[i].count
+                        }
+                        return price;
+                    }
+                },
+                filters: {
+                    formatDate: function(value){
+                        var date = new Date(value);
+                        var year = date.getFullYear();
+                        var month = padDate(date.getMonth() + 1);
+                        var day = padDate(date.getDate());
+                        var hours = padDate(date.getHours());
+                        var minutes = padDate(date.getMinutes());
+                        var seconds = padDate(date.getSeconds());
+                        return year+'-'+month+'-'+day+' '+hours+':'+minutes+':'+seconds;
+                    }
+                },
+                methods: {
+                    handleClose: function(){
+                        this.show = this.show ? false:true;
+                    }
+                },
+                created: function(){
+                    console.log("now is created..");
+                },
+                mounted: function(){
+                    var _this = this;
+                    this.timer = setInterval(function(){
+                        _this.name = new Date();
+                    }, 1000);
+                },
+                beforeDestroy: function(){
+                    if(this.timer){
+                        clearInterval(this.timer);
+                    }
+                }
+            })
+        </script>
+    </body>
+</html>

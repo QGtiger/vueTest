@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>Vue</title>
+</head>
+<body>
+	<div id="app">
+		<div>总数： {{count}}</div>
+		<button @click="handleAdd">+1</button>
+
+		<ul>
+			<template v-for="(book, index) in books">
+				<li>{{ index+1 }}. {{ book.name }} {{book.price}} 
+					<button @click="handleIncrease(index)">+1</button>
+					 {{book.count}}
+					 <button @click="handleReduce(index)" :disabled="book.count === 1">-1</button>
+				</li>
+			</template>
+		</ul>
+		<div>总价： {{totalPrice}}</div>
+
+		<input type="text" name="" v-model.lazy="inputTest" @input="console.log(new Date())">
+		<p>{{ inputTest }}</p>
+	</div>
+
+	<div id="watch-example">
+	  <p>
+	    Ask a yes/no question:
+	    <input v-model="question">
+	  </p>
+	  <p>{{ answer }}</p>
+	</div>
+
+	<script src="https://unpkg.com/vue/dist/vue.min.js"></script>
+	<script src="https://cdn.jsdelivr.net/npm/axios@0.12.0/dist/axios.min.js"></script>
+	<script src="https://cdn.jsdelivr.net/npm/lodash@4.13.1/lodash.min.js"></script>
+	<script type="text/javascript">
+		var app = new Vue({
+			el: '#app',
+			data: {
+				count: 0,
+				books: [
+					{
+						name: "Vue实践",
+						price: 213,
+						count: 2,
+					},
+					{
+						name: "Django开发和实践",
+						price: 23.1,
+						count:5
+					},
+					{
+						name: "弟弟",
+						price: 23,
+						count:12
+					}
+				],
+				inputTest: ''
+			},
+			methods: {
+				handleAdd: function(){
+					var _this = this;
+					_this.count ++;
+				},
+				handleIncrease: function(index){
+					this.books[index].count++;
+				},
+				handleReduce: function(index){
+					if(this.books[index].count===1)return;
+					this.books[index].count--;
+				}
+			},
+			computed: {
+				totalPrice: function(){
+					var price = 0;
+					for(var i = 0; i < this.books.length; i ++){
+						price+=this.books[i].price*this.books[i].count;
+					}
+					return price;
+				}
+			}
+		})
+		var watchExampleVM = new Vue({
+		  el: '#watch-example',
+		  data: {
+		    question: '',
+		    answer: 'I cannot give you an answer until you ask a question!'
+		  },
+		  watch: {
+		    // 如果 `question` 发生改变，这个函数就会运行
+		    question: function (newQuestion, oldQuestion) {
+		      this.answer = 'Waiting for you to stop typing...'
+		      this.debouncedGetAnswer()
+		    }
+		  },
+		  created: function () {
+		    // `_.debounce` 是一个通过 Lodash 限制操作频率的函数。
+		    // 在这个例子中，我们希望限制访问 yesno.wtf/api 的频率
+		    // AJAX 请求直到用户输入完毕才会发出。想要了解更多关于
+		    // `_.debounce` 函数 (及其近亲 `_.throttle`) 的知识，
+		    // 请参考：https://lodash.com/docs#debounce
+		    this.debouncedGetAnswer = _.debounce(this.getAnswer, 500)
+		  },
+		  methods: {
+		    getAnswer: function () {
+		      if (this.question.indexOf('?') === -1) {
+		        this.answer = 'Questions usually contain a question mark. ;-)'
+		        return
+		      }
+		      this.answer = 'Thinking...'
+		      var vm = this
+		      axios.get('https://yesno.wtf/api')
+		        .then(function (response) {
+		          vm.answer = _.capitalize(response.data.answer)
+		        })
+		        .catch(function (error) {
+		          vm.answer = 'Error! Could not reach the API. ' + error
+		        })
+		    }
+		  }
+		})
+	</script>
+</body>
+</html>
