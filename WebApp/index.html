@@ -1,0 +1,17 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="utf-8">
+        <title>调查问卷</title>
+        <link rel="stylesheet" href="style.css">
+    </head>
+    <body>
+        <div id="app" v-cloak>
+            <questions :questions="questions" v-model="active"></questions>
+            <p v-show="totalAnswer">您的答案: {{questions}}</p>
+        </div>
+        <script src="https://unpkg.com/vue/dist/vue.min.js"></script>
+        <script src="questions.js"></script>
+        <script src="index.js"></script>
+    </body>
+</html>
